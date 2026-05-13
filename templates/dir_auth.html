@@ -1,0 +1,31 @@
+$def with(dirname, error)
+$var title: $dirname - 验证访问
+
+<div class="container" style="max-width:420px">
+    <div class="header">
+        <span class="header-icon">🔒</span>
+        <h1>$dirname</h1>
+        <p>该目录已加密，请输入访问密码</p>
+    </div>
+
+    $if error:
+        <div class="alert-error">$error</div>
+
+    <div class="form-card">
+        <form method="POST" action="/auth/$dirname">
+            <div class="form-group">
+                <label>访问密码</label>
+                <input type="password" name="password" autocomplete="off" autofocus required>
+            </div>
+            <button type="submit" class="btn-primary btn-full">验证</button>
+        </form>
+    </div>
+
+    <div style="text-align:center;margin-top:16px">
+        <a href="/" class="back-link">&#8592; 返回目录</a>
+    </div>
+
+    <div class="footer">
+        <a href="https://github.com/z16388/py_web_deploy" target="_blank">py_web_deploy</a>
+    </div>
+</div>

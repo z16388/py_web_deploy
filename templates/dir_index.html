@@ -1,0 +1,31 @@
+$def with(dirs)
+$var title: APP 交付中心
+
+<div class="container">
+    <div class="topbar">
+        <span class="topbar-brand">🤖 APP 交付中心</span>
+    </div>
+
+    $if not dirs:
+        <div class="empty-state">
+            <div class="empty-icon">📂</div>
+            <p>暂无可用目录</p>
+            <p class="tip">请在 deploy/ 下创建子目录，并放入 .apk / .aab / .obb 文件</p>
+        </div>
+    $else:
+        <div class="dir-grid">
+        $for d in dirs:
+            <a href="/files/$d.url_name" class="dir-card">
+                <span class="dir-card-icon">📁</span>
+                <div class="dir-card-name">$d.name</div>
+                <div class="dir-card-count">$d.count 个文件</div>
+                $if d.locked:
+                    <div class="dir-card-lock">🔒 需要密码</div>
+            </a>
+        </div>
+
+    <div class="footer">
+        <a href="https://github.com/z16388/py_web_deploy" target="_blank">py_web_deploy</a>
+    </div>
+</div>
+

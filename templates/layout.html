@@ -1,0 +1,236 @@
+$def with(content)
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>$content.title</title>
+    <style>
+        :root {
+            --bg:           #0d1117;
+            --surface:      #161b22;
+            --surface-hover:#1c2128;
+            --border:       #30363d;
+            --text:         #e6edf3;
+            --text-muted:   #8b949e;
+            --accent:       #3DDC84;
+            --accent-dark:  #2bb36b;
+            --red:          #f85149;
+            --blue:         #58a6ff;
+            --gold:         #e3b341;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
+                         'PingFang SC', 'Microsoft YaHei', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+        }
+        a { color: inherit; text-decoration: none; }
+        .container { max-width: 900px; margin: 0 auto; padding: 20px 16px; }
+
+        /* ── Header ── */
+        .header { text-align: center; padding: 52px 20px 40px; }
+        .header-icon {
+            font-size: 68px; display: block; margin-bottom: 18px;
+            filter: drop-shadow(0 0 24px rgba(61,220,132,.45));
+        }
+        .header h1 { font-size: 28px; font-weight: 700; margin-bottom: 8px; }
+        .header p  { font-size: 14px; color: var(--text-muted); }
+
+        /* ── Back link ── */
+        .back-link {
+            display: inline-flex; align-items: center; gap: 6px;
+            color: var(--text-muted); font-size: 14px;
+            padding: 7px 14px;
+            border: 1px solid var(--border); border-radius: 8px;
+            margin-bottom: 24px;
+            transition: color .2s, border-color .2s;
+        }
+        .back-link:hover { color: var(--accent); border-color: var(--accent); }
+
+        /* ── Directory grid ── */
+        .dir-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 14px;
+        }
+        .dir-card {
+            background: var(--surface); border: 1px solid var(--border);
+            border-radius: 14px; padding: 28px 16px 22px;
+            text-align: center; display: block;
+            transition: border-color .2s, background .2s, transform .2s;
+        }
+        .dir-card:hover {
+            border-color: var(--accent); background: var(--surface-hover);
+            transform: translateY(-3px);
+        }
+        .dir-card-icon  { font-size: 42px; display: block; margin-bottom: 12px; }
+        .dir-card-name  { font-size: 15px; font-weight: 600; margin-bottom: 6px; word-break: break-all; }
+        .dir-card-count { font-size: 12px; color: var(--text-muted); }
+
+        /* ── File list ── */
+        .file-list { display: flex; flex-direction: column; gap: 10px; }
+        .file-card {
+            background: var(--surface); border: 1px solid var(--border);
+            border-radius: 12px; padding: 16px 18px;
+            display: flex; align-items: center; gap: 14px;
+            transition: border-color .2s, background .2s, transform .2s;
+        }
+        .file-card:hover {
+            border-color: var(--accent); background: var(--surface-hover);
+            transform: translateY(-2px);
+        }
+        .file-icon {
+            width: 48px; height: 48px; border-radius: 10px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 22px; flex-shrink: 0;
+        }
+        .file-icon.apk { background: rgba(61,220,132,.12); }
+        .file-icon.aab { background: rgba(88,166,255,.12); }
+        .file-icon.obb { background: rgba(227,179,65,.12); }
+        .file-info { flex: 1; min-width: 0; }
+        .file-name {
+            font-size: 14px; font-weight: 600; word-break: break-all;
+            margin-bottom: 5px; display: flex; align-items: center;
+            flex-wrap: wrap; gap: 6px;
+        }
+        .file-meta { font-size: 12px; color: var(--text-muted); display: flex; gap: 14px; flex-wrap: wrap; }
+
+        /* ── Badges ── */
+        .badge {
+            display: inline-block; font-size: 10px; font-weight: 700;
+            padding: 2px 7px; border-radius: 5px;
+            letter-spacing: .5px; text-transform: uppercase;
+        }
+        .badge-new { background: rgba(248,81,73,.15);  color: var(--red);    border: 1px solid rgba(248,81,73,.35); }
+        .badge-apk { background: rgba(61,220,132,.15); color: var(--accent); border: 1px solid rgba(61,220,132,.35); }
+        .badge-aab { background: rgba(88,166,255,.15); color: var(--blue);   border: 1px solid rgba(88,166,255,.35); }
+        .badge-obb { background: rgba(227,179,65,.15); color: var(--gold);   border: 1px solid rgba(227,179,65,.35); }
+
+        /* ── Download button ── */
+        .download-btn {
+            background: linear-gradient(135deg, var(--accent), var(--accent-dark));
+            color: #fff; padding: 9px 22px; border-radius: 20px;
+            font-size: 13px; font-weight: 600; white-space: nowrap; flex-shrink: 0;
+            box-shadow: 0 2px 12px rgba(61,220,132,.28);
+            transition: opacity .2s, transform .15s;
+        }
+        .download-btn:hover { opacity: .88; transform: scale(1.04); }
+
+        /* ── Empty state ── */
+        .empty-state { text-align: center; padding: 80px 20px; color: var(--text-muted); }
+        .empty-icon  { font-size: 56px; margin-bottom: 16px; }
+        .empty-state p    { font-size: 15px; margin-bottom: 6px; }
+        .empty-state .tip { font-size: 13px; color: var(--border); }
+
+        /* ── Footer ── */
+        .footer { text-align: center; padding: 40px 20px 24px; color: var(--border); font-size: 12px; }
+        .footer a { color: var(--text-muted); }
+        .footer a:hover { color: var(--accent); }
+
+        /* ── Responsive ── */
+        @media (max-width: 480px) {
+            .header { padding: 36px 12px 24px; }
+            .header h1 { font-size: 22px; }
+            .dir-grid { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); }
+            .file-meta { flex-direction: column; gap: 3px; }
+            .download-btn { padding: 8px 16px; font-size: 12px; }
+        }
+
+        /* ── Topbar ── */
+        .topbar {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 12px 0 24px;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 8px;
+            flex-wrap: wrap; gap: 10px;
+        }
+        .topbar-brand { font-weight: 700; font-size: 16px; color: var(--text); }
+        .topbar-right { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+        .topbar-user  { font-size: 13px; color: var(--text-muted); display: flex; align-items: center; gap: 6px; }
+        .topbar-link  { font-size: 13px; color: var(--text-muted); transition: color .2s; }
+        .topbar-link:hover { color: var(--accent); }
+        .btn-login {
+            background: var(--accent); color: #000 !important;
+            padding: 5px 14px; border-radius: 6px; font-weight: 600;
+        }
+        .btn-login:hover { opacity: .85; color: #000 !important; }
+
+        /* ── Dir lock badge ── */
+        .dir-card-lock { font-size: 11px; color: var(--text-muted); margin-top: 6px; }
+
+        /* ── Form card ── */
+        .form-card {
+            background: var(--surface); border: 1px solid var(--border);
+            border-radius: 12px; padding: 24px; margin-bottom: 24px;
+        }
+        .form-row { display: flex; gap: 12px; flex-wrap: wrap; align-items: flex-end; }
+        .form-group { display: flex; flex-direction: column; gap: 6px; flex: 1; min-width: 140px; }
+        .form-group label { font-size: 12px; color: var(--text-muted); }
+        .form-group input,
+        .form-group select {
+            background: var(--bg); border: 1px solid var(--border);
+            border-radius: 8px; padding: 9px 12px;
+            color: var(--text); font-size: 14px; outline: none;
+            transition: border-color .2s;
+        }
+        .form-group input:focus,
+        .form-group select:focus { border-color: var(--accent); }
+        .form-group select option { background: var(--surface); }
+        .form-group-btn { flex: 0 0 auto; }
+
+        /* ── Buttons ── */
+        .btn-primary {
+            background: linear-gradient(135deg, var(--accent), var(--accent-dark));
+            color: #000; border: none; padding: 9px 22px;
+            border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer;
+            transition: opacity .2s;
+        }
+        .btn-primary:hover { opacity: .88; }
+        .btn-full { width: 100%; padding: 11px; font-size: 15px; margin-top: 6px; }
+        .btn-danger-sm {
+            background: rgba(248,81,73,.12); color: var(--red);
+            border: 1px solid rgba(248,81,73,.3); padding: 4px 12px;
+            border-radius: 6px; font-size: 12px; cursor: pointer;
+            transition: background .2s;
+        }
+        .btn-danger-sm:hover { background: rgba(248,81,73,.25); }
+
+        /* ── Alert ── */
+        .alert-error {
+            background: rgba(248,81,73,.1); border: 1px solid rgba(248,81,73,.35);
+            color: var(--red); padding: 11px 16px; border-radius: 8px;
+            font-size: 14px; margin-bottom: 20px;
+        }
+
+        /* ── Section title ── */
+        .section-title {
+            font-size: 13px; font-weight: 700; color: var(--text-muted);
+            text-transform: uppercase; letter-spacing: .8px;
+            margin: 28px 0 12px; padding-bottom: 8px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        /* ── Table ── */
+        .table-card {
+            background: var(--surface); border: 1px solid var(--border);
+            border-radius: 12px; overflow: hidden; margin-bottom: 24px;
+        }
+        table { width: 100%; border-collapse: collapse; }
+        thead tr { border-bottom: 1px solid var(--border); }
+        th { text-align: left; padding: 11px 16px; font-size: 12px; color: var(--text-muted); font-weight: 600; }
+        td { padding: 11px 16px; font-size: 14px; border-bottom: 1px solid rgba(48,54,61,.5); }
+        tr:last-child td { border-bottom: none; }
+        tr:hover td { background: var(--surface-hover); }
+
+        /* ── role badges ── */
+        .badge-admin { background: rgba(248,81,73,.12); color: var(--red);    border-color: rgba(248,81,73,.3); }
+        .badge-user  { background: rgba(88,166,255,.12); color: var(--blue);  border-color: rgba(88,166,255,.3); }
+    </style>
+</head>
+<body>
+$:content
+</body>
+</html>
