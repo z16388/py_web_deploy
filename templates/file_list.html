@@ -1,4 +1,4 @@
-$def with(dirname, files)
+$def with(dirname, items)
 $var title: $dirname
 
 <div class="container">
@@ -14,7 +14,7 @@ $var title: $dirname
         <p>选择版本下载到您的 Android 设备</p>
     </div>
 
-    $if not files:
+    $if not items:
         <div class="empty-state">
             <div class="empty-icon">📭</div>
             <p>该目录下暂无安装包</p>
@@ -22,33 +22,94 @@ $var title: $dirname
         </div>
     $else:
         <div class="file-list">
-        $for i, f in enumerate(files):
-            <div class="file-card">
-                <div class="file-icon $f.ext[1:]">
-                    $if f.ext == '.apk':
-                        📱
-                    $elif f.ext == '.aab':
-                        📦
-                    $else:
-                        💾
-                </div>
-                <div class="file-info">
-                    <div class="file-name">
-                        $f.name
-                        <span class="badge badge-$f.ext[1:]">$f.ext[1:].upper()</span>
-                        $if i == 0:
-                            <span class="badge badge-new">最新</span>
-                    </div>
-                    <div class="file-meta">
-                        <span>&#128194; $f.size</span>
-                        <span>&#128336; $f.mtime</span>
+        $for i, item in enumerate(items):
+            $if item.type == 'folder':
+                <div class="tree-folder" style="margin-left: ${item.indent * 20}px" data-folder-id="folder-$i" data-indent="$item.indent">
+                    <div class="folder-header" onclick="toggleFolder('folder-$i')">
+                        <span class="folder-toggle">▼</span>
+                        <span class="folder-icon">📁</span>
+                        <span class="folder-name">$item.name</span>
                     </div>
                 </div>
-                <a href="/download/$dirname/$f.name" class="download-btn">&#8595; 下载</a>
-            </div>
+            $else:
+                $code:
+                    f = item.data
+                <div class="file-card" style="margin-left: ${item.indent * 20}px" data-indent="$item.indent">
+                    <div class="file-icon $f.ext[1:]">
+                        $if f.ext == '.apk':
+                            📱
+                        $elif f.ext == '.aab':
+                            📦
+                        $else:
+                            💾
+                    </div>
+                    <div class="file-info">
+                        <div class="file-name">
+                            $f.name
+                            <span class="badge badge-$f.ext[1:]">$f.ext[1:].upper()</span>
+                            $if item.is_newest:
+                                <span class="badge badge-new">最新</span>
+                        </div>
+                        <div class="file-meta">
+                            <span>&#128194; $f.size</span>
+                            <span>&#128336; $f.mtime</span>
+                        </div>
+                    </div>
+                    <a href="/download/$dirname/$f.url_path" class="download-btn">&#8595; 下载</a>
+                </div>
         </div>
 
     <div class="footer">
         <a href="https://github.com/z16388/py_web_deploy" target="_blank">py_web_deploy</a>
     </div>
 </div>
+
+<script>
+function toggleFolder(folderId) {
+    const folderDiv = document.querySelector('[data-folder-id="' + folderId + '"]');
+    if (!folderDiv) return;
+    
+    const toggle = folderDiv.querySelector('.folder-toggle');
+    const indent = parseInt(folderDiv.dataset.indent);
+    const allItems = document.querySelectorAll('.tree-folder, .file-card');
+    const folderIndex = Array.from(allItems).indexOf(folderDiv);
+    
+    // 检查当前状态
+    const isExpanded = toggle.textContent === '▼';
+    
+    // 切换图标
+    toggle.textContent = isExpanded ? '▶' : '▼';
+    
+    if (isExpanded) {
+        // 收起：隐藏所有子项
+        for (let i = folderIndex + 1; i < allItems.length; i++) {
+            const item = allItems[i];
+            const itemIndent = parseInt(item.dataset.indent);
+            
+            // 如果缩进级别不大于当前文件夹，则停止
+            if (itemIndent <= indent) break;
+            
+            // 隐藏所有子项
+            item.style.display = 'none';
+        }
+    } else {
+        // 展开：显示所有子项，并将子文件夹重置为展开状态
+        for (let i = folderIndex + 1; i < allItems.length; i++) {
+            const item = allItems[i];
+            const itemIndent = parseInt(item.dataset.indent);
+            
+            // 如果缩进级别不大于当前文件夹，则停止
+            if (itemIndent <= indent) break;
+            
+            // 显示所有后代项
+            item.style.display = '';
+            
+            // 如果是子文件夹，将其重置为展开状态
+            if (item.classList.contains('tree-folder')) {
+                const subToggle = item.querySelector('.folder-toggle');
+                if (subToggle) subToggle.textContent = '▼';
+            }
+        }
+    }
+}
+</script>
