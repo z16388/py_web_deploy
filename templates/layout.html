@@ -275,6 +275,42 @@ $def with(content)
         .folder-content {
             transition: opacity .2s, max-height .3s;
         }
+        
+        /* ── Delete button ── */
+        .delete-btn {
+            background: rgba(248,81,73,.12);
+            color: var(--red);
+            border: 1px solid rgba(248,81,73,.35);
+            padding: 9px 18px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+            white-space: nowrap;
+            flex-shrink: 0;
+            cursor: pointer;
+            transition: background .2s, transform .15s;
+            margin-right: 8px;
+        }
+        .delete-btn:hover {
+            background: rgba(248,81,73,.25);
+            transform: scale(1.04);
+        }
+        
+        /* ── Folder delete button ── */
+        .folder-delete-btn {
+            background: rgba(248,81,73,.12);
+            color: var(--red);
+            border: 1px solid rgba(248,81,73,.35);
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: background .2s;
+            margin-left: auto;
+        }
+        .folder-delete-btn:hover {
+            background: rgba(248,81,73,.25);
+        }
     </style>
 </head>
 <body>

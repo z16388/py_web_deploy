@@ -29,6 +29,8 @@ urls = (
     '/files/([^/]+)',          'file_list',
     '/auth/([^/]+)',           'dir_auth',
     '/download/([^/]+)/(.+)', 'file_download',
+    '/delete_file/([^/]+)',    'delete_file',
+    '/delete_dir/([^/]+)',     'delete_dir',
 )
 
 app    = web.application(urls, globals())
@@ -149,7 +151,7 @@ def build_file_tree(directory):
     return tree
 
 
-def flatten_tree_for_display(tree, indent=0, file_index=[0]):
+def flatten_tree_for_display(tree, indent=0, file_index=[0], parent_path=''):
     """将树结构扁平化为显示列表"""
     result = []
     
@@ -168,15 +170,18 @@ def flatten_tree_for_display(tree, indent=0, file_index=[0]):
     # 再递归处理子目录（逆序排列）
     if tree.get('dirs'):
         for dir_name in sorted(tree['dirs'].keys(), reverse=True):
+            # 构建当前目录的完整路径
+            current_path = parent_path + '/' + dir_name if parent_path else dir_name
             # 添加文件夹标题
             result.append(web.storage(
                 type='folder',
                 name=dir_name,
-                indent=indent
+                indent=indent,
+                path=current_path
             ))
             # 递归添加子目录内容
             subtree = tree['dirs'][dir_name]
-            result.extend(flatten_tree_for_display(subtree, indent + 1, file_index))
+            result.extend(flatten_tree_for_display(subtree, indent + 1, file_index, current_path))
     
     return result
 
@@ -290,6 +295,114 @@ class file_download:
         # 下载时使用原始文件名（不包含路径）
         download_name = os.path.basename(file_rel_path)
         return download_file(download_name, file_path)
+
+
+class delete_file:
+    """删除文件"""
+    def POST(self, dirname):
+        safe_dir = os.path.basename(dirname)
+        data = web.input(filepath='', password='')
+        filepath = data.filepath
+        password = data.password
+        
+        # 检查密码
+        dir_pwd = dir_password(safe_dir)
+        if dir_pwd and password != dir_pwd:
+            web.header('Content-Type', 'application/json')
+            return json.dumps({'success': False, 'error': '密码错误'})
+        
+        # 将URL路径转换回系统路径
+        file_rel_path = urllib.parse.unquote(filepath).replace('/', os.sep)
+        
+        # 安全检查
+        if '..' in file_rel_path or file_rel_path.startswith(os.sep):
+            web.header('Content-Type', 'application/json')
+            return json.dumps({'success': False, 'error': '非法路径'})
+        
+        dir_path = os.path.join(DEPLOY_ROOT, safe_dir)
+        file_path = os.path.join(dir_path, file_rel_path)
+        
+        # 安全检查：确保最终路径在部署根目录下
+        real_file = os.path.realpath(file_path)
+        real_root = os.path.realpath(DEPLOY_ROOT)
+        if not real_file.startswith(real_root + os.sep):
+            web.header('Content-Type', 'application/json')
+            return json.dumps({'success': False, 'error': '非法路径'})
+        
+        # 删除文件
+        try:
+            if os.path.isfile(file_path):
+                os.remove(file_path)
+                logger.info(f'已删除文件: {file_path}')
+                web.header('Content-Type', 'application/json')
+                return json.dumps({'success': True})
+            else:
+                web.header('Content-Type', 'application/json')
+                return json.dumps({'success': False, 'error': '文件不存在'})
+        except Exception as e:
+            logger.error(f'删除文件失败: {e}')
+            web.header('Content-Type', 'application/json')
+            return json.dumps({'success': False, 'error': str(e)})
+
+
+class delete_dir:
+    """删除目录"""
+    def POST(self, dirname):
+        safe_dir = os.path.basename(dirname)
+        data = web.input(dirpath='', password='')
+        dirpath = data.dirpath
+        password = data.password
+        
+        # 检查密码
+        dir_pwd = dir_password(safe_dir)
+        if dir_pwd and password != dir_pwd:
+            web.header('Content-Type', 'application/json')
+            return json.dumps({'success': False, 'error': '密码错误'})
+        
+        # 空路径表示删除最外层目录，不允许
+        if not dirpath or dirpath == '/':
+            web.header('Content-Type', 'application/json')
+            return json.dumps({'success': False, 'error': '不允许删除最外层目录'})
+        
+        # 将URL路径转换回系统路径
+        dir_rel_path = urllib.parse.unquote(dirpath).replace('/', os.sep)
+        
+        # 安全检查
+        if '..' in dir_rel_path or dir_rel_path.startswith(os.sep):
+            web.header('Content-Type', 'application/json')
+            return json.dumps({'success': False, 'error': '非法路径'})
+        
+        dir_path = os.path.join(DEPLOY_ROOT, safe_dir)
+        target_path = os.path.join(dir_path, dir_rel_path)
+        
+        # 安全检查：确保最终路径在部署根目录下
+        real_target = os.path.realpath(target_path)
+        real_root = os.path.realpath(DEPLOY_ROOT)
+        if not real_target.startswith(real_root + os.sep):
+            web.header('Content-Type', 'application/json')
+            return json.dumps({'success': False, 'error': '非法路径'})
+        
+        # 安全检查：不允许删除最外层目录（DEPLOY_ROOT的直接子目录）
+        real_dir = os.path.realpath(dir_path)
+        if real_target == real_dir:
+            web.header('Content-Type', 'application/json')
+            return json.dumps({'success': False, 'error': '不允许删除最外层目录'})
+        
+        # 删除目录
+        try:
+            if os.path.isdir(target_path):
+                import shutil
+                shutil.rmtree(target_path)
+                logger.info(f'已删除目录: {target_path}')
+                web.header('Content-Type', 'application/json')
+                return json.dumps({'success': True})
+            else:
+                web.header('Content-Type', 'application/json')
+                return json.dumps({'success': False, 'error': '目录不存在'})
+        except Exception as e:
+            logger.error(f'删除目录失败: {e}')
+            web.header('Content-Type', 'application/json')
+            return json.dumps({'success': False, 'error': str(e)})
 
 
 if __name__ == '__main__':

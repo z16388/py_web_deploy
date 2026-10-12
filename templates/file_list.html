@@ -29,6 +29,7 @@ $var title: $dirname
                         <span class="folder-toggle">▼</span>
                         <span class="folder-icon">📁</span>
                         <span class="folder-name">$item.name</span>
+                        <button class="folder-delete-btn" onclick="event.stopPropagation(); deleteDirectory('$dirname', '$item.path')" title="删除目录">🗑️</button>
                     </div>
                 </div>
             $else:
@@ -55,6 +56,7 @@ $var title: $dirname
                             <span>&#128336; $f.mtime</span>
                         </div>
                     </div>
+                    <button class="delete-btn" onclick="deleteFile('$dirname', '$f.url_path')" title="删除文件">🗑️ 删除</button>
                     <a href="/download/$dirname/$f.url_path" class="download-btn">&#8595; 下载</a>
                 </div>
         </div>
@@ -111,5 +113,61 @@ function toggleFolder(folderId) {
             }
         }
     }
+}
+
+// 删除文件
+function deleteFile(dirname, filepath) {
+    if (!confirm('确定要删除这个文件吗？\n\n' + decodeURIComponent(filepath))) {
+        return;
+    }
+    
+    const password = prompt('如果该目录有密码保护，请输入密码（无密码直接点确定）：');
+    if (password === null) return; // 用户取消
+    
+    fetch('/delete_file/' + dirname, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+        body: 'filepath=' + encodeURIComponent(filepath) + '&password=' + encodeURIComponent(password)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('删除成功！');
+            location.reload();
+        } else {
+            alert('删除失败：' + (data.error || '未知错误'));
+        }
+    })
+    .catch(err => {
+        alert('删除失败：' + err.message);
+    });
+}
+
+// 删除目录
+function deleteDirectory(dirname, dirpath) {
+    if (!confirm('确定要删除这个目录及其所有内容吗？\n\n' + decodeURIComponent(dirpath) + '\n\n此操作不可恢复！')) {
+        return;
+    }
+    
+    const password = prompt('如果该目录有密码保护，请输入密码（无密码直接点确定）：');
+    if (password === null) return; // 用户取消
+    
+    fetch('/delete_dir/' + dirname, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+        body: 'dirpath=' + encodeURIComponent(dirpath) + '&password=' + encodeURIComponent(password)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('删除成功！');
+            location.reload();
+        } else {
+            alert('删除失败：' + (data.error || '未知错误'));
+        }
+    })
+    .catch(err => {
+        alert('删除失败：' + err.message);
+    });
 }
 </script>
