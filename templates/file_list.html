@@ -11,14 +11,14 @@ $var title: $dirname
     <div class="header" style="padding-top:16px">
         <span class="header-icon">📦</span>
         <h1>$dirname</h1>
-        <p>选择版本下载到您的 Android 设备</p>
+        <p>选择版本下载包文件</p>
     </div>
 
     $if not items:
         <div class="empty-state">
             <div class="empty-icon">📭</div>
             <p>该目录下暂无安装包</p>
-            <p class="tip">请将 .apk / .aab / .obb 文件放入 deploy/$dirname 目录后刷新</p>
+            <p class="tip">请将 .apk / .aab / .obb / .ipa / .hap 文件放入 deploy/$dirname 目录后刷新</p>
         </div>
     $else:
         <div class="file-list">
@@ -41,6 +41,8 @@ $var title: $dirname
                             📱
                         $elif f.ext == '.aab':
                             📦
+                        $elif f.ext == '.hap':
+                            📱
                         $else:
                             💾
                     </div>

@@ -14,12 +14,13 @@ TEMPLATES_DIR = os.path.join(BASE_DIR, 'templates')
 CONFIG_DIR    = os.path.join(BASE_DIR, 'config')
 PASSWORDS_FILE = os.path.join(CONFIG_DIR, 'dir_passwords.json')
 
-SUPPORTED_EXTS = ('.apk', '.aab', '.obb', '.ipa')
+SUPPORTED_EXTS = ('.apk', '.aab', '.obb', '.ipa', '.hap')
 MIME_TYPES = {
     '.apk': 'application/vnd.android.package-archive',
     '.aab': 'application/octet-stream',
     '.obb': 'application/octet-stream',
     '.ipa': 'application/octet-stream',
+    '.hap': 'application/octet-stream',
 }
 
 web.config.debug = False  # 禁用 autoreload，防止模块被加载两次导致 Session 错误

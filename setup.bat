@@ -25,7 +25,7 @@ echo.
 echo 环境搭建完成！
 echo.
 echo 使用方式：
-echo   1. 将安装包放入 deploy\^<目录名^>\ 下
+echo   1. 将 .apk / .aab / .obb / .ipa / .hap 文件放入 deploy\^<目录名^>\ 下
 echo   2. 可选：编辑 config\dir_passwords.json 设置目录密码
 echo   3. 运行: python deploy.py ^<端口号^>
 echo   4. 访问: http://0.0.0.0:^<端口号^>/

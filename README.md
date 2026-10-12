@@ -1,13 +1,13 @@
 ﻿# py_web_deploy
 
-一个基于 Python 3 + web.py 的轻量级 Web 交付工具，无需 App Store，通过浏览器即可分发 APK / AAB / OBB 安装包文件。
+一个基于 Python 3 + web.py 的轻量级 Web 交付工具，通过浏览器即可分发 APK / AAB / OBB / IPA / 鸿蒙 HAP 包文件。
 
 ---
 
 ## 功能特性
 
 - 📁 **多目录管理**：自动扫描 `deploy/` 下所有子目录，每个目录独立展示
-- 📦 **多格式支持**：支持 `.apk`、`.aab`、`.obb` 等格式，按修改时间倒序展示，最新版本自动标注
+- 📦 **多格式支持**：支持 `.apk`、`.aab`、`.obb`、`.ipa`、`.hap`（鸿蒙包）格式，扩展名不区分大小写，按修改时间倒序展示，最新版本自动标注
 - 🔒 **目录密码保护**：通过配置文件为指定目录设置访问密码，密码验证通过后会话内持续有效
 - 🌙 **夜间模式 UI**：CSS 变量驱动的深色主题，响应式设计，手机端友好
 - 🛡️ **路径穿越防护**：所有文件路径经过严格校验，防止目录遍历攻击
@@ -60,9 +60,17 @@ deploy/
 ├── android/          # 公开目录
 │   ├── myapp-1.0.apk
 │   └── myapp-1.1.apk
+├── harmony/          # 手动创建的鸿蒙包示例目录，可使用其他目录名
+│   ├── myapp-1.0.hap
+│   └── release/      # 支持递归扫描子目录
+│       └── myapp-1.1.hap
 └── internal/         # 可设置密码保护
     └── myapp-debug.apk
 ```
+
+HAP 文件与其他格式使用相同的分发流程：将 `.hap`（或 `.HAP`）文件复制到 `deploy/` 下的任意子目录，刷新页面即可查看文件数量、HAP 格式标签、大小和修改时间，并通过下载按钮获取文件。HAP 下载使用 `application/octet-stream`，目录密码保护同样适用，无需新增依赖或格式配置。
+
+本工具提供包文件的展示和下载，不执行编译、签名或设备安装。
 
 ### 4. 启动服务
 
@@ -96,6 +104,7 @@ http://<服务器IP>:8888/
 ```json
 {
   "android": "",
+  "harmony": "",
   "internal": "your-password"
 }
 ```
@@ -121,7 +130,8 @@ py_web_deploy/
 │   └── dir_passwords.json       # 目录密码配置（首次启动自动生成）
 ├── sessions/                    # Session 存储（自动生成）
 ├── deploy/
-│   └── android/                 # 默认示例目录，存放安装包
+│   ├── android/                 # 默认示例目录，存放安装包
+│   └── harmony/                 # 手动创建的鸿蒙包示例目录，存放 .hap 文件
 └── templates/
     ├── layout.html              # 页面基础布局（夜间主题 CSS）
     ├── dir_index.html           # 目录列表页
